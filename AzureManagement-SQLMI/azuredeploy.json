@@ -4,7 +4,7 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue": "centralus",
+            "defaultValue": "southcentralus",
             "metadata": {
                 "description": "Enter location. If you leave this field blank resource group location would be used."
             }
