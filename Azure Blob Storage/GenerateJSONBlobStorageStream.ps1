@@ -40,9 +40,8 @@ function StreamJSONFiles
     $jsoncontent = $null
     $jsoncontent=Get-Content $JSONTEMPLATEFILE| ConvertFrom-Json
 
-    $ctr=0
-    $rd="y";
-
+    $ctr=1584
+    #$rd="y";
     do{
         $batchSize = 5
         for ($i = 0; $i -lt $batchSize; $i++) {
@@ -56,9 +55,10 @@ function StreamJSONFiles
         }
         #copy batch of local json files to Azure Blob Storage
         UploadJSONFiles ($StorageContainer)
-        start-sleep 30
+        #start-sleep 30
         #$rd=Read-Host "Continue? Enter N or ctrl-c to stop."
-    }while(  $rd -ne "n")
+    #}while(  $rd -ne "n")
+    }while(  $ctr -lt 2000000)
 }
 
 StreamJSONFiles
