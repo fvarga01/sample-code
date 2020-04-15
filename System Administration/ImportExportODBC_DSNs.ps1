@@ -10,8 +10,10 @@ Get-OdbcDriver -Platform 'All' | foreach {
         } 
     } | select Computername, Name,Platform, DriverODBCVer,Driver  | ft
 
+
+
 write-host "******************** ODBC DSNs ****************************************"
-Get-OdbcDsn -Platform All -Name "fcvsqlserverea" | foreach {
+Get-OdbcDsn -Platform All | foreach {
     $attr = $_ | select -ExpandProperty Attribute
     $_ | select Name, DsnType, Platform, DriverName | select * | ft
     $attr
