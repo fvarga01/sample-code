@@ -61,14 +61,13 @@ Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'} | 
 
 #/*** DEBUG ONLY***
 #**Deleting DSN's for local testing only 
-Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform' -and $_.name -like "*dummydsn"} | Remove-OdbcDsn
+# Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform' -and $_.name -like "*dummydsn"} | Remove-OdbcDsn
 #renaming DSN for local testing only
-((Get-Content -path $XmlFilePath -Raw) -replace 'uDSN3264','uDSN3264dummydsn') | Set-Content -Path $XmlFilePath
-((Get-Content -path $XmlFilePath -Raw) -replace 'uDSN32','uDSN32dummydsn') | Set-Content -Path $XmlFilePath
-((Get-Content -path $XmlFilePath -Raw) -replace 'sDSN32','sDSN32dummydsn') | Set-Content -Path $XmlFilePath
-((Get-Content -path $XmlFilePath -Raw) -replace 'sDSN64','sDSN64dummydsn') | Set-Content -Path $XmlFilePath
-
-Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'} | ft
+# ((Get-Content -path $XmlFilePath -Raw) -replace 'uDSN3264','uDSN3264dummydsn') | Set-Content -Path $XmlFilePath
+# ((Get-Content -path $XmlFilePath -Raw) -replace 'uDSN32','uDSN32dummydsn') | Set-Content -Path $XmlFilePath
+# ((Get-Content -path $XmlFilePath -Raw) -replace 'sDSN32','sDSN32dummydsn') | Set-Content -Path $XmlFilePath
+# ((Get-Content -path $XmlFilePath -Raw) -replace 'sDSN64','sDSN64dummydsn') | Set-Content -Path $XmlFilePath
+# Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'} | ft
 #*** DEBUG ONLY ***/
 
 write-host "******************** Updating XML file to ensure correct Platform string ****************************************"
