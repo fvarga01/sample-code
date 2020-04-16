@@ -5,8 +5,8 @@ Get-OdbcDriver -Platform 'All' | foreach {
         ComputerName = $env:COMPUTERNAME
         Name = $_.Name
         Platform = $_.Platform
-        Driver  =  $obj2["Driver"]
-        DriverODBCVer  =  $obj2["DriverODBCVer"]
+        Driver  =  $attr["Driver"]
+        DriverODBCVer  =  $attr["DriverODBCVer"]
         } 
     } | select Computername, Name,Platform, DriverODBCVer,Driver  | ft
 
