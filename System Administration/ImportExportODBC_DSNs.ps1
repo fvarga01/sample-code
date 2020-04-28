@@ -48,7 +48,7 @@ function convert-HashToStringArray([hashtable] $HashTableObject)
 
 #create a remote CIM Session
 #New-CIMSession: https://docs.microsoft.com/en-us/powershell/module/cimcmdlets/new-cimsession?view=powershell-7
-#$remoteCIMSession= New-CimSession -ComputerName "****ENTER REMOTE COMPUTERNAME HERE*****"
+$remoteCIMSession= New-CimSession -ComputerName "****ENTER REMOTE COMPUTERNAME HERE*****"
 $extractedDSNs=Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'} 
 $extractedDSNs | foreach {
  Add-OdbcDsn -Name $_.Name -DsnType $_.DsnType -Platform $_.Platform -DriverName $_.DriverName -SetPropertyValue (convert-HashToStringArray $_.Attribute) -CimSession $remoteCIMSession
@@ -109,7 +109,7 @@ $ImportedDSNs = Import-CLIXML -Path $XmlFilePath
 
 $ImportedDSNs | foreach {
 
-    #Part2:OptA
+    #Part2:OptA (using add-obdcdsn)
     Add-OdbcDsn -Name $_.Name -DsnType $_.DsnType -Platform $_.Platform -DriverName $_.DriverName -SetPropertyValue (convert-HashToStringArray $_.Attribute)
 
     #Part2 OptB (using odbcconf tool)
@@ -146,6 +146,7 @@ $ImportedDSNs | foreach {
 # regedit /e filename.reg "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI"
 
 $dsnsToExport = @()
+$XmlFilePath = "dsn_regkeys.xml"
 #extract 64-bit system dsn, 32-bit system dsn, and user dsns
 $rootPaths = @("HKLM:\SOFTWARE\ODBC\ODBC.INI\", "HKLM:SOFTWARE\Wow6432Node\ODBC\ODBC.INI\", "HKCU:\SOFTWARE\ODBC\ODBC.INI")
 foreach($root in $rootPaths)
@@ -184,14 +185,15 @@ foreach($root in $rootPaths)
 }
 
 #export array of dsns to a file
-$dsnsToExport | Export-CliXML "dsn_regkeys.xml"
+$dsnsToExport | Export-CliXML $XmlFilePath 
 #DEBUG: $dsnsToExport | %{ $_ ;"------"}
 
 
 #******************************************************************************************************
 #*********** Part 2: Steps below are to be executed on the destination (new) machine ****************************************
 #******************************************************************************************************
-$dsnsToImport = Import-Clixml "dsn_regkeys.xml"
+$XmlFilePath = "dsn_regkeys.xml"
+$dsnsToImport = Import-Clixml $XmlFilePath
 
 #DEBUG: $dsnsToImport | %{ $_ ;"------"}
 foreach ($dsn in $dsnsToImport)
