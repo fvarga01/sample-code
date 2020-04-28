@@ -108,21 +108,19 @@ $ImportedDSNs = Import-CLIXML -Path $XmlFilePath
 #Loop through each imported DSN, build attribute string, add the DSN
 
 $ImportedDSNs | foreach {
-    #DEBUG:
-    $pairedAttributeString=  "DSN=" +$_.Name + "|" + ((convert-HashToStringArray $_.Attribute) -join "|")
-    $pairedAttributeString
 
     #Part2:OptA
     Add-OdbcDsn -Name $_.Name -DsnType $_.DsnType -Platform $_.Platform -DriverName $_.DriverName -SetPropertyValue (convert-HashToStringArray $_.Attribute)
 
     #Part2 OptB (using odbcconf tool)
+    #$pairedAttributeString=  "DSN=" +$_.Name + "|" + ((convert-HashToStringArray $_.Attribute) -join "|")
     #64-bit system:
     #   odbcconf.exe configsysdsn "ODBC Driver 17 for SQL Server" "DSN=dsn1|SERVER=xyz.database.windows.net|Trusted_Connection=No|Database=AdventureWorksLT"
     #32-bit system:
     #   %windir%\syswow64\configdsn "ODBC Driver 17 for SQL Server" "DSN=dsn1|SERVER=xyz.database.windows.net|Trusted_Connection=No|Database=AdventureWorksLT"
-    #if() ....user dsn....
-    #if($_.Platform -eq '64-bit'){     odbcconf.exe configsysdsn $_.DriverName $pairedAttributeString     }
-    #elseif($_.Platform -eq '64-bit'){     %windir%\syswow64\odbcconf.exe configsysdsn $_.DriverName $pairedAttributeString     }
+    #if($_.DsnType -eq 'User'...){ odbcconf.exe configdsn $_.DriverName $pairedAttributeString     }
+    #elseif($_.Platform -eq '64-bit'){     odbcconf.exe configSYSdsn $_.DriverName $pairedAttributeString     }
+    #elseif($_.Platform -eq '64-bit'){     %windir%\syswow64\odbcconf.exe configSYSdsn $_.DriverName $pairedAttributeString     }
  }
  
 
@@ -136,7 +134,6 @@ $ImportedDSNs | foreach {
 #**************************************************************************************************************
 
 
-
 #******************************************************************************************************
 #*********** Part 1: Steps below are to be executed on the source machine ****************************************
 #******************************************************************************************************
@@ -148,7 +145,7 @@ $ImportedDSNs | foreach {
 #export via reg.exe: 
 # regedit /e filename.reg "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI"
 
-$dsns = @()
+$dsnsToExport = @()
 #extract 64-bit system dsn, 32-bit system dsn, and user dsns
 $rootPaths = @("HKLM:\SOFTWARE\ODBC\ODBC.INI\", "HKLM:SOFTWARE\Wow6432Node\ODBC\ODBC.INI\", "HKCU:\SOFTWARE\ODBC\ODBC.INI")
 foreach($root in $rootPaths)
@@ -181,15 +178,14 @@ foreach($root in $rootPaths)
             $currDSNProperties.Add("PSParentPath",$root)
 
             #add currentDSN to array of DSns
-            $dsns += $currDSNProperties
+            $dsnsToExport += $currDSNProperties
         }
    }
 }
 
 #export array of dsns to a file
-$dsns | Export-CliXML "dsn_regkeys.xml"
-#DEBUG: 
-$dsns | %{ $_ ;"------"}
+$dsnsToExport | Export-CliXML "dsn_regkeys.xml"
+#DEBUG: $dsnsToExport | %{ $_ ;"------"}
 
 
 #******************************************************************************************************
@@ -197,32 +193,16 @@ $dsns | %{ $_ ;"------"}
 #******************************************************************************************************
 $dsnsToImport = Import-Clixml "dsn_regkeys.xml"
 
-$dsnsToImport | %{ $_ ;"------"}
+#DEBUG: $dsnsToImport | %{ $_ ;"------"}
 foreach ($dsn in $dsnsToImport)
 {
     $dsnPath = $dsn["PSPath"]
     if(-not (Test-Path $dsnPath))
     {
-        new-item $dsnPath
+        new-item $dsnPath -Verbose
     }
     $dsn.Keys | Where-Object {$_ -notin ("PSPath","PSParentPath")} | foreach{
-            $dsnPath + ": " + $_  + "=" + $dsn[$_]
-            New-ItemProperty -Path $dsnPath -Name $_ -Value $dsn[$_] -ErrorAction SilentlyContinue
+            #DEBUG: $dsnPath + ": " + $_  + "=" + $dsn[$_]
+            New-ItemProperty -Path $dsnPath -Name $_ -Value $dsn[$_] -ErrorAction SilentlyContinue | Out-Null
    }
 }
-
-
-#**************************************************************************************************************
-#**************************************************************************************************************
-#**************************************************************************************************************
-# (optionally) If permitted by the ODBC driver, set Username + Passwords
-#**************************************************************************************************************
-#**************************************************************************************************************
-#**************************************************************************************************************
-#https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d4eab3b3-6254-4644-a1e4-e6866f7507fd/uid-in-odbcini?forum=sqldataaccess
-#https://docs.microsoft.com/en-us/sql/odbc/reference/syntax/sqldriverconnect-function?view=sql-server-ver15
-#Some drivers support storing username and password, most do not
-
-#$Credential = Get-Credential
-#$Credential.UserName
-#$Credential.GetNetworkCredential().password
