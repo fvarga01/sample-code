@@ -8,13 +8,12 @@
 
 write-host "******************** List ODBC Drivers ****************************************"
 Get-OdbcDriver -Platform 'All' | where-object {$_.Name -notlike "*Microsoft*(*.*)*" } | 
-    select  @{n='DriverODBCVer';e={$env:COMPUTERNAME}, Name,Platform,
+    select  @{n='ComputerName';e={$env:COMPUTERNAME}}, Name,Platform,
         @{n='DriverODBCVer';e={$_.Attribute.DriverODBCVer}},@{n='Driver';e={$_.Attribute.Driver}},
         @{n='DriverFileVer';e={[string] ((Get-Item $_.Attribute.Driver -ErrorAction SilentlyContinue).VersionInfo.FileVersion)}} | ft
 
 
 write-host "******************** List ODBC DSNs ****************************************"
-#Get-ODBCDSN |  select Name, DsnType, Platform, DriverName, @{n='Server';e={$_.Attribute.server}} | ft
 Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'}  |
     foreach {
         $attr = $_ | select -ExpandProperty Attribute
@@ -26,8 +25,6 @@ Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'}  |
         $attr
 }
 
-
-
 #**************************************************************************************************************
 #**************************************************************************************************************
 #**************************************************************************************************************
@@ -37,7 +34,7 @@ Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'}  |
 #**************************************************************************************************************
 #**************************************************************************************************************
 
-#utility function which converts a hastbale object to a string array
+#utility function which converts a hashtable object to a string array
 function convert-HashToStringArray([hashtable] $HashTableObject)
 {
     $stringNonemptyAttributes = @() #format must be an array of strings where each string has a Key=Value format
@@ -51,7 +48,7 @@ function convert-HashToStringArray([hashtable] $HashTableObject)
 
 #create a remote CIM Session
 #New-CIMSession: https://docs.microsoft.com/en-us/powershell/module/cimcmdlets/new-cimsession?view=powershell-7
-$remoteCIMSession= New-CimSession -ComputerName "****ENTER REMOTE COMPUTERNAME HERE*****"
+#$remoteCIMSession= New-CimSession -ComputerName "****ENTER REMOTE COMPUTERNAME HERE*****"
 $extractedDSNs=Get-OdbcDsn -Platform All | where-object {$_.Platform -ne 'Unknown Platform'} 
 $extractedDSNs | foreach {
  Add-OdbcDsn -Name $_.Name -DsnType $_.DsnType -Platform $_.Platform -DriverName $_.DriverName -SetPropertyValue (convert-HashToStringArray $_.Attribute) -CimSession $remoteCIMSession
@@ -145,11 +142,9 @@ $ImportedDSNs | foreach {
 #******************************************************************************************************
 
 #https://docs.microsoft.com/en-us/sql/odbc/reference/install/registry-entries-for-data-sources?view=sql-server-ver15
-
 #64-bit System: HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI
 #32-bit System: HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI
 #32/64 User: HKCU:\SOFTWARE\ODBC\ODBC.INI
-
 #export via reg.exe: 
 # regedit /e filename.reg "HKEY_LOCAL_MACHINE\SOFTWARE\ODBC\ODBC.INI"
 
@@ -158,49 +153,76 @@ $dsns = @()
 $rootPaths = @("HKLM:\SOFTWARE\ODBC\ODBC.INI\", "HKLM:SOFTWARE\Wow6432Node\ODBC\ODBC.INI\", "HKCU:\SOFTWARE\ODBC\ODBC.INI")
 foreach($root in $rootPaths)
 {
-   $dsnNames=(Get-Item -path $root).GetSubKeyNames() |Where-Object {$_ -notin ("ODBC Data Sources","dBASE Files","Excel Files","MS Access Database") }
-   foreach($dsnName in $dsnNames){
-        $dsnKey = join-path $root $dsnName
+    #get a list of DSN names (output does not include the regkey path)
+   $strDsnNames=(Get-Item -path $root).GetSubKeyNames() |Where-Object {$_ -notin ("dBASE Files","Excel Files","MS Access Database") }
+   
+   #extract dsn property values stored for each of the DSNs
+   foreach($strDsnName in $strDsnNames){
+        #get full regkey path name where DSN resides
+        $strDsnKeyName = join-path $root $strDsnName
 
-        $propertyNames = get-item  -path $dsnKey | select -ExpandProperty Property
+        #get list of regkey values under the strDsnKeyName registry key, the list is found in the property named, "Property"
+        #skipping default user dsn values which are stored under the "ODBC Data Sources" regkey
+        $regValueNames = get-item  -path $strDsnKeyName | select -ExpandProperty Property | Where-Object {$_ -notin ("dBASE Files","Excel Files","MS Access Database")}
         
+        #create a hash table which will store all the property values for the current DSN
         $currDSNProperties = @{}
-        $currDSNProperties.Add("PSPath",$dsnKey)
-        foreach ($pn in $propertyNames) 
+
+        #add each property value to the current DSN object
+        foreach ( $regValueName in $regValueNames) 
         {
-            $value=Get-ItemProperty -path $dsnKey -Name $pn | select -ExpandProperty $pn
-            $currDSNProperties.Add($pn, $value )
+            $dsnProperty=Get-ItemProperty -path $strDsnKeyName -Name $regValueName | select -ExpandProperty $regValueName
+            $currDSNProperties.Add($regValueName, $dsnProperty)
         }
-        $dsns += $currDSNProperties
+
+        #only add to collection if regkey has child values
+        if($currDSNProperties.Count -gt 0){
+            $currDSNProperties.Add("PSPath",$strDsnKeyName)
+            $currDSNProperties.Add("PSParentPath",$root)
+
+            #add currentDSN to array of DSns
+            $dsns += $currDSNProperties
+        }
    }
 }
+
+#export array of dsns to a file
 $dsns | Export-CliXML "dsn_regkeys.xml"
-
-
+#DEBUG: 
+$dsns | %{ $_ ;"------"}
 
 
 #******************************************************************************************************
 #*********** Part 2: Steps below are to be executed on the destination (new) machine ****************************************
 #******************************************************************************************************
 $dsnsToImport = Import-Clixml "dsn_regkeys.xml"
+
+$dsnsToImport | %{ $_ ;"------"}
 foreach ($dsn in $dsnsToImport)
 {
     $dsnPath = $dsn["PSPath"]
-    new-item $dsnPath
-    $dsn.Keys | Where-Object {$_ -ne "PSPath"} | foreach{  New-ItemProperty -Path $dsnPath -Name $_ -Value $dsn[$_]}
+    if(-not (Test-Path $dsnPath))
+    {
+        new-item $dsnPath
+    }
+    $dsn.Keys | Where-Object {$_ -notin ("PSPath","PSParentPath")} | foreach{
+            $dsnPath + ": " + $_  + "=" + $dsn[$_]
+            New-ItemProperty -Path $dsnPath -Name $_ -Value $dsn[$_] -ErrorAction SilentlyContinue
+   }
 }
 
 
 #**************************************************************************************************************
 #**************************************************************************************************************
 #**************************************************************************************************************
-# If permitted by the ODBC driver, set Username + Passwords
+# (optionally) If permitted by the ODBC driver, set Username + Passwords
 #**************************************************************************************************************
 #**************************************************************************************************************
 #**************************************************************************************************************
 #https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d4eab3b3-6254-4644-a1e4-e6866f7507fd/uid-in-odbcini?forum=sqldataaccess
 #https://docs.microsoft.com/en-us/sql/odbc/reference/syntax/sqldriverconnect-function?view=sql-server-ver15
 #Some drivers support storing username and password, most do not
+
 #$Credential = Get-Credential
-#New-ItemProperty -Path HKLM:\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\<DSNName> -PropertyType String -Name UID -Value $Credential.UserName
-#New-ItemProperty -Path HKLM:\SOFTWARE\WOW6432Node\ODBC\ODBC.INI\<DSNName> -PropertyType String -Name PWD -Value $Credential.GetNetworkCredential().password
+#$Credential.UserName
+#$Credential.GetNetworkCredential().password
