@@ -15,37 +15,37 @@ Get-InstalledModule -Name Az -AllVersions | select Name,Version
 
 
 $subscriptionName = ""
-$rgname = ""
-$adfname = ""
-$irname  = ""
-$irn1_name = ""
-$irn2_name = ""
+$rgName = ""
+$adfName = ""
+$SHIR_Name  = ""
+$SHIR_Node1Name = ""
+$SHIR_Node2Name = ""
 
 #Logon to Azure + Verify subscription context
 Connect-AzAccount -Subscription $subscriptionName
 get-azcontext
 
 #list data factories
-Get-azdatafactory $rgname
+Get-azdatafactoryV2 $rgName
 
 # Monitor SHIR, see example 5:
 #  https://docs.microsoft.com/en-us/powershell/module/az.datafactory/get-azdatafactoryv2integrationruntime?view=azps-3.7.0
-Get-AzDataFactoryV2IntegrationRuntime -ResourceGroupName $rgname -DataFactoryName $adfname -Name $irname -Status
+Get-AzDataFactoryV2IntegrationRuntime -ResourceGroupName $rgName -DataFactoryName $adfName -Name $SHIR_Name -Status
 
 
 # Monitor SHIR Node see example1: 
 #  https://docs.microsoft.com/en-us/powershell/module/Az.DataFactory/Get-AzDataFactoryV2IntegrationRuntimeNode?view=azps-3.7.0
-Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgname -DataFactoryName $adfname  -IntegrationRuntimeName $irname -Name $irn1_name
-Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgname -DataFactoryName $adfname  -IntegrationRuntimeName $irname -Name $irn2_name
+Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName -DataFactoryName $adfName  -IntegrationRuntimeName $SHIR_Name -Name $SHIR_Node1Name
+Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName -DataFactoryName $adfName  -IntegrationRuntimeName $SHIR_Name -Name $SHIR_Node2Name
 
 #ping SHIR nodes
-Test-NetConnection -ComputerName $irn1_name #-Port 1433
-Test-NetConnection -ComputerName $irn2_name #-Port 1433
+Test-NetConnection -ComputerName $SHIR_Node1Name #-Port 1433
+Test-NetConnection -ComputerName $SHIR_Node2Name #-Port 1433
 
 
 #check dns cache
-Get-DnsClientCache -Name $irn1_name
-Get-DnsClientCache -Name $irn2_name
+Get-DnsClientCache -Name $SHIR_Node1Name
+Get-DnsClientCache -Name $SHIR_Node2Name
 
 #clear local dns cache
 #Clear-DnsClientCache
