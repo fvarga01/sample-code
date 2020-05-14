@@ -5,4 +5,4 @@
 
 
 $path =''
-Get-ChildItem $path -Recurse <# -Filter “*Newsletter*” #>| Rename-Item -NewName {$_.name -replace ‘[\W]?[^\.\w]’, '-' -replace '-\.','.'}
+Get-ChildItem $path -Recurse <# -Filter “*Newsletter*” #>| Rename-Item -NewName {$_.name -replace '[\W]?[^\.\w]', '-' -replace '-\.','.'}
