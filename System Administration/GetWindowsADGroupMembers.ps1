@@ -263,7 +263,7 @@ $GROUP_HASH=new-object 'System.Collections.Generic.SortedDictionary[string,int]'
 $MEMBER_CSVSTREAM=new-object System.Text.StringBuilder(50000000) #set intial large size to avoid dynamic growth slowness
 
 #Define the output csv file and  headers
-$OUTFILE = "membersList.csv" #output file name, will be dumped in local working directory
+$OUTFILE = "ADGroupMembersList.csv" #output file name, will be dumped in local working directory
 $HDR= @("Host Group Name","Member Type","Member logon Account","Member Exchange Alias","Member SMTP","First Name","Last Name","Office Phone","Mobile","IsDisabled","GroupOU")
 
 #write header to CSV stream
