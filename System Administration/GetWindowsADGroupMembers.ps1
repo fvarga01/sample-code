@@ -253,7 +253,7 @@ if(-not $GLOBALCATALOG){
 writelog("Script started: " + (get-date))
 #Top level OU's we are interested in enumerating
 $RootOU_LDAPQueryArr =@("OU=Production,DC=contoso,DC=com",
-        "OU=Development,OU=Partners,DC=contoso,DC=com")
+        "OU=Development,DC=contoso,DC=com")
 
 #Create global dictionary object which uses tress for fast insert and binary search. Purpose is to avoid enumerating groups twice.
 $GROUP_HASH=new-object 'System.Collections.Generic.SortedDictionary[string,int]'  -ArgumentList ([System.StringComparer]::CurrentCultureIgnoreCase) 
