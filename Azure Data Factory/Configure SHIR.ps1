@@ -36,7 +36,8 @@ Connect-AzAccount -Subscription $subscriptionName
 get-azcontext
 
 #list data factories
-Get-azdatafactoryV2 -ResourceGroupName $rgName | Select-Object DataFactoryName, ResourceGroupName, Location, ProvisioningState
+Get-azdatafactoryV2 -ResourceGroupName $rgName |
+     Select-Object DataFactoryName, ResourceGroupName, Location, ProvisioningState
 
 #View SHIR details
 #  https://docs.microsoft.com/en-us/powershell/module/az.datafactory/get-azdatafactoryv2integrationruntime?view=azps-3.7.0
@@ -47,7 +48,8 @@ set-AzDataFactoryV2IntegrationRuntime -ResourceGroupName $rgName `
     -DataFactoryName $adfName -Name $SHIR_Name -Description $newSHIRDescription
 #View Changes
 get-AzDataFactoryV2IntegrationRuntime  -ResourceGroupName $rgName `
-    -DataFactoryName $adfName  -Name $SHIR_Name -Status | Select-Object Name, Description
+    -DataFactoryName $adfName  -Name $SHIR_Name -Status |
+    Select-Object Name, Description
 
 #View SHIR Node details
 #  https://docs.microsoft.com/en-us/powershell/module/Az.DataFactory/Get-AzDataFactoryV2IntegrationRuntimeNode?view=azps-3.7.0
@@ -55,13 +57,16 @@ Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName `
     -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name 
 #Change SHIR Node's ConcurrentJobsLimit
 Update-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName `
-    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name -ConcurrentJobsLimit $newSHIRNodeConcurrencyLimit
+    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name `
+    -ConcurrentJobsLimit $newSHIRNodeConcurrencyLimit
 #View Changes
 Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName `
-    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name | Select-Object ConcurrentJobsLimit, MaxConcurrentJobs
+    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name |
+    Select-Object ConcurrentJobsLimit, MaxConcurrentJobs
 
 #Get a list of all the ADF linked services and their respective integration runtimes
 Get-AzDataFactoryV2LinkedService -ResourceGroupName $rgName -DataFactoryName $adfName |
-     Select-Object Name -ExpandProperty Properties | Select-Object @{n="Linked Service Name";e={$_.Name}},
-     @{n="Integration Runtime Name";e={if($_.ConnectVia) {$_.ConnectVia.ReferenceName} else {"<default>"}}} |
+     Select-Object Name -ExpandProperty Properties |
+     Select-Object @{n="Linked Service Name";e={$_.Name}},
+        @{n="Integration Runtime Name";e={if($_.ConnectVia) {$_.ConnectVia.ReferenceName} else {"<default>"}}} |
      Sort-Object -Property "Integration Runtime Name"
