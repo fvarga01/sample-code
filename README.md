@@ -1,2 +1,3 @@
-# Sample-Code
+# Sample Code
+
 Sample source code repository.
