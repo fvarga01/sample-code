@@ -1,4 +1,5 @@
-﻿# Demonstrates how to view/update a self-hosted integration runtime (SHIR) and SHIR node programmatically
+﻿# Demonstrates how to view and update an Azure Data Factory (ADF)
+# self-hosted integration runtime (SHIR) and SHIR node programmatically
 
 #################################################################################################
 # This script uses the Azure (Az) PowerShell module (newer)
@@ -22,10 +23,12 @@ $adfName = ''
 $rgName = ''
 $SHIR_Name = ''
 $SHIR_Node1Name = ''
+$newSHIRNodeConcurrencyLimit = 60
+$newSHIRDescription =''
 
 #Verify Az Module is installed and that AzureRm is not installed
-Get-InstalledModule -Name AzureRm -AllVersions | select Name,Version
-Get-InstalledModule -Name Az -AllVersions | select Name,Version
+Get-InstalledModule -Name AzureRm -AllVersions | Select-Object Name,Version
+Get-InstalledModule -Name Az -AllVersions | Select-Object Name,Version
 
 #Connect to your Azure subscription
 Connect-AzAccount -Subscription $subscriptionName
@@ -33,7 +36,7 @@ Connect-AzAccount -Subscription $subscriptionName
 get-azcontext
 
 #list data factories
-Get-azdatafactoryV2 -ResourceGroupName $rgName | select DataFactoryName, ResourceGroupName, Location, ProvisioningState
+Get-azdatafactoryV2 -ResourceGroupName $rgName | Select-Object DataFactoryName, ResourceGroupName, Location, ProvisioningState
 
 #View SHIR details
 #  https://docs.microsoft.com/en-us/powershell/module/az.datafactory/get-azdatafactoryv2integrationruntime?view=azps-3.7.0
@@ -41,10 +44,10 @@ get-AzDataFactoryV2IntegrationRuntime  -ResourceGroupName $rgName `
     -DataFactoryName $adfName  -Name $SHIR_Name -Status
 #Change SHIR Description
 set-AzDataFactoryV2IntegrationRuntime -ResourceGroupName $rgName `
-    -DataFactoryName $adfName -Name $SHIR_Name -Description "test description 3"
+    -DataFactoryName $adfName -Name $SHIR_Name -Description $newSHIRDescription
 #View Changes
 get-AzDataFactoryV2IntegrationRuntime  -ResourceGroupName $rgName `
-    -DataFactoryName $adfName  -Name $SHIR_Name -Status | select Name, Description
+    -DataFactoryName $adfName  -Name $SHIR_Name -Status | Select-Object Name, Description
 
 #View SHIR Node details
 #  https://docs.microsoft.com/en-us/powershell/module/Az.DataFactory/Get-AzDataFactoryV2IntegrationRuntimeNode?view=azps-3.7.0
@@ -52,13 +55,13 @@ Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName `
     -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name 
 #Change SHIR Node's ConcurrentJobsLimit
 Update-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName `
-    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name -ConcurrentJobsLimit 15
+    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name -ConcurrentJobsLimit $newSHIRNodeConcurrencyLimit
 #View Changes
 Get-AzDataFactoryV2IntegrationRuntimeNode -ResourceGroupName $rgName `
-    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name | select ConcurrentJobsLimit, MaxConcurrentJobs
+    -DataFactoryName $adfName -IntegrationRuntimeName  $SHIR_Name -Name $SHIR_Node1Name | Select-Object ConcurrentJobsLimit, MaxConcurrentJobs
 
-#Get a list of all the linked services and their respective integration runtimes
+#Get a list of all the ADF linked services and their respective integration runtimes
 Get-AzDataFactoryV2LinkedService -ResourceGroupName $rgName -DataFactoryName $adfName |
-     select Name -ExpandProperty Properties | Select @{n="Linked Service Name";e={$_.Name}},
+     Select-Object Name -ExpandProperty Properties | Select-Object @{n="Linked Service Name";e={$_.Name}},
      @{n="Integration Runtime Name";e={if($_.ConnectVia) {$_.ConnectVia.ReferenceName} else {"<default>"}}} |
      Sort-Object -Property "Integration Runtime Name"
