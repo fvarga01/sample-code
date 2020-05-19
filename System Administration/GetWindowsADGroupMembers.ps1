@@ -293,7 +293,7 @@ $GROUP_HASH.GetEnumerator() | Sort-Object Value -Descending |
     Select-Object @{Name="Group Name";
         Expression={$_.Key.Substring(3,$_.Key.IndexOf(",")-3)}},
     @{Name="Number Of Members";
-        Expression={$_.Value}} -First 40
+        Expression={$_.Value}} -First 10
 
 writelog(("Total script duration H/M/sec/ms:{0:00}:{1:00}:{2:00}:{3:00}" -f $timerTL.Elapsed.Hours,$timerTL.Elapsed.Minutes,$timerTL.Elapsed.Seconds,$timerTL.Elapsed.Milliseconds))
 writelog(("Time spent processing groups locally H/M/sec/ms:{0:00}:{1:00}:{2:00}:{3:00}" -f $timerGrp.Elapsed.Hours,$timerGrp.Elapsed.Minutes,$timerGrp.Elapsed.Seconds,$timerGrp.Elapsed.Milliseconds))
