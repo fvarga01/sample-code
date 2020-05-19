@@ -1,7 +1,7 @@
 ﻿
 <#
 Note this was created with older Powershell 3.0 + uses start-job for parallelism
-script can likely be improved further with Powershell foreach parallelism (which uses workflows)
+This script can likely be improved further with Powershell foreach parallelism (which uses workflows)
 
  This script enumerates all the Windows Active Directory groups in the specified top level OU's. 
  Note: this script only applies to Windows AD not Azure Active Directory (AAD)
