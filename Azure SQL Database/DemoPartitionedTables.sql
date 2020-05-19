@@ -1,5 +1,5 @@
 /*
-DO NOT RUN IN PRODUCTION, THIS SCRIPT DROPS AND DELETES TABLES.
+NOTE: THIS SCRIPT DROPS AND DELETES TABLES. 
 
 This script demonstrates the table partitioning feature in Azure SQL Database (ASDB).
 
