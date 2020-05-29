@@ -1,0 +1,1 @@
+relog "trace1.blg" -f CSV -o "trace1.csv"
