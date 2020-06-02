@@ -1,0 +1,18 @@
+
+1. (optional) Download the latest diskspd.exe file from
+    https://gallery.technet.microsoft.com/DiskSpd-a-robust-storage-6cd2f223
+2. Copy the latest x64 diskspd.exe to the same directory as 1.run_diskspd.bat file
+3. Copy the TestStoragePerformance folder to the machine where you will run the storage tests
+4. Edit the 1.run_diskspd.bat file which creates a 900GB file and tests 64k block size sequential reads and writes.
+
+    Specify the following parameters:
+    ---------------------------------
+    file names: Specify one or more files to test. Indicate the fully
+        qualified file path (volname:\folder\filename.dat
+        for example: C:\ClusterStorage\vol1\diskspd_testfile.dat)
+    -t parameter: Adjust thread numbers based on number of cpu's available
+         on the machine where you are running the test. Note the 
+    You may need to increase number of files, increase number of threads (-t param),
+        or increase outstanding I/Os (-o parameter) to get increased throughput.
+
+
