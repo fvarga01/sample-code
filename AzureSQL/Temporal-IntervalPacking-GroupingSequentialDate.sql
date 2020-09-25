@@ -72,7 +72,6 @@ DeptID	ManagerID	mindt	maxdt
 Reference:
 https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15#creating-a-temporal-table-with-a-default-history-table
 
-Please review the alternate solution here as well:
 - New Solution to the Packing Intervals Problem https://www.itprotoday.com/sql-server/new-solution-packing-intervals-problem
 */
 
