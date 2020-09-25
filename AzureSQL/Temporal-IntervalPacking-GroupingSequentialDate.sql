@@ -2,7 +2,7 @@
 *** Warning this script drops and creates the dbo.Department and dbo.DepartmentHistory tables
 
 This script demonstrates methods to group sets of intervals of sequential date data. 
-For example. day you want to find everytime the manager for a department changed.
+For example, say you want to find every time the manager for a department changed.
 
 DeptID	ManagerID	DeptName	SysStartTime	SysEndTime
 10	100	Production	2020-09-25 17:57:00.2263833	2020-09-25 17:57:06.8827115
@@ -282,7 +282,7 @@ Update dbo.Department set ManagerID = 152 where DeptID = 12
 GO
 
 
---repeat to demonstrate duplicate manager id entries (for example department switched  from mgr1 to mgr2 and at a later point back to mgr1
+--repeat to demonstrate duplicate manager id entries (for example department switched  from mgr1 to mgr2 and at a later point back to mgr1)
 GO
 Update dbo.Department set DeptName = 'Dept A' where DeptID  = 10
 GO
@@ -372,7 +372,7 @@ where DeptID = 10
 ) select * from cte1
 where (
     prevManager <> ManagerID or prevManager is null --first startdate
-    or nextManager <> ManagerID or nextManager is null) 
+    or nextManager <> ManagerID or nextManager is null) --last enddate
 order by dt
 
 -----------------------------------------------------------------------------------------------------
