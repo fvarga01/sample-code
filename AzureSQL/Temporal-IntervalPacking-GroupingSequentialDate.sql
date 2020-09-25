@@ -1,5 +1,5 @@
 /*
-*** Warning this script drops and created the dbo.Department and dbo.DepartmentHistory tables
+*** Warning this script drops and creates the dbo.Department and dbo.DepartmentHistory tables
 
 This script demonstrates methods to group sets of intervals of sequential date data. 
 For example. day you want to find everytime the manager for a department changed.
@@ -57,7 +57,7 @@ DeptID	ManagerID	DeptName	SysStartTime	SysEndTime
 10	130	Dept F	2020-09-25 17:58:12.1804941	9999-12-31 23:59:59.9999999
 
 
-Desired Output:
+Desired output should be:
 DeptID	ManagerID	mindt	maxdt
 10	100	2020-09-25 17:57:00.2263833	2020-09-25 17:57:07.3514368
 10	110	2020-09-25 17:57:07.3514368	2020-09-25 17:57:16.5547558
@@ -71,6 +71,9 @@ DeptID	ManagerID	mindt	maxdt
 
 Reference:
 https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15#creating-a-temporal-table-with-a-default-history-table
+
+Please review the alternate solution here as well:
+- New Solution to the Packing Intervals Problem https://www.itprotoday.com/sql-server/new-solution-packing-intervals-problem
 */
 
 
@@ -328,8 +331,8 @@ Update dbo.Department set ManagerID = 130 where DeptID = 10
  as
 (
 select DeptID, ManagerID, SysStartTime, SysEndTime
-    ,LAG(ManagerID, 1, null) OVER (ORDER BY SysStartTime) as prevManager
-    ,LEAD(ManagerID, 1, null) OVER (ORDER BY SysStartTime) as nextManager
+    ,LAG(ManagerID, 1, null) OVER (ORDER BY SysStartTime) as prevManager --for each sequential date row, get prev manager id
+    ,LEAD(ManagerID, 1, null) OVER (ORDER BY SysStartTime) as nextManager --for each sequential date row, get next manager id
 from dbo.Department for SYSTEM_TIME ALL
 where DeptId  = 10
 ), cte2 as
