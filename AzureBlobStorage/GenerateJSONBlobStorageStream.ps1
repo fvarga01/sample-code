@@ -22,7 +22,7 @@ Function UploadJSONFiles {
     $targetMIME = "application/octet-stream"
     $files = Get-ChildItem -Path .  -Filter "file_*.json"
     foreach ($file in $files) {
-        Set-AzStorageBlobContent -File $file.FullName -Container $StorageContainer -Blob ("2020/04/09/" + $file.Name) -Properties @{"ContentType" = "$targetMIME"} -Context $StorageContext -Force
+        Set-AzStorageBlobContent -File $file.FullName -Container $StorageContainer -Blob ("2021/01/21/" + $file.Name) -Properties @{"ContentType" = "$targetMIME"} -Context $StorageContext -Force
     } 
     $files | Remove-Item #delete local json files
  }
@@ -40,7 +40,7 @@ function StreamJSONFiles
     $jsoncontent = $null
     $jsoncontent=Get-Content $JSONTEMPLATEFILE| ConvertFrom-Json
 
-    $ctr=1584
+    $ctr=0
     #$rd="y";
     do{
         $batchSize = 5
@@ -58,7 +58,7 @@ function StreamJSONFiles
         #start-sleep 30
         #$rd=Read-Host "Continue? Enter N or ctrl-c to stop."
     #}while(  $rd -ne "n")
-    }while(  $ctr -lt 2000000)
+    }while(  $ctr -lt 1000)
 }
 
 StreamJSONFiles
