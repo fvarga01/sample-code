@@ -1,5 +1,5 @@
 Install-Module -Name MicrosoftPowerBIMgmt
-$pbiWSName="report name here"
+$pbiWSName="workspace name here"
 $pbiWSId=$null
 Connect-PowerBIServiceAccount
 $pbiWSId = Get-PowerBIWorkspace -Name $pbiWSName | Select-Object -ExpandProperty Id
