@@ -2,7 +2,7 @@
     "DeviceId" : "12341",
     "SensorReadings" :
     {
-        "Temperature" : 80,
+        "Temperature" : 83,
         "Humidity" : 70,
         "CustomSensor01" : 5,
         "CustomSensor02" : 99,
