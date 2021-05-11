@@ -42,7 +42,7 @@ jobs:
     - name: Publish DacPac to Azure SQL Database
       uses: Azure/sql-action@v1
       with:
-        server-name: fcvsqlserverea.database.windows.net
+        server-name: ${{secrets.SQL_SERVERNAME}}
         connection-string: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
         dacpac-package: '../artifacts/sqldb-db1.dacpac'
 
