@@ -1,3 +1,3 @@
 # Sample Code
 
-Sample source code repository.
+Sample code script snippets
