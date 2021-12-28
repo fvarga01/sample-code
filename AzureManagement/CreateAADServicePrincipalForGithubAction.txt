@@ -1,0 +1,88 @@
+Install Azure + AAD modules
+---------------------------------
+Install-Module -Name Az.Accounts -MinimumVersion 1.8 -Scope AllUsers
+Install-Module -Name Az.Resources -MinimumVersion 2.0.1 -Scope AllUsers
+
+az login and get subscription details:
+-----------------------------------------
+az login --tenant "<mydomain.com>"
+az account set --subscription "<MY SUBSCRIPTION NAME HERE>"
+az account show
+az logout
+
+powershell login and get subscription details:
+--------------------------------------------------
+connect-azaccount -tenant "<mydomain.com>"
+Set-AzContext -Subscription "<MY SUBSCRIPTION NAME HERE>"
+Get-AzContext
+disconnect-azaccount
+
+UPN name of UPN to be used by Github Actions:
+-----------------------------------------------------------
+$UserPrincipalName='<myaccount@mydomain.com>'
+
+manually plug in UPN id
+----------------------------
+$ID="<aadaccount_guid>"
+
+or retrieve id from principal name
+--------------------------------------
+$ID = (Get-AzADUser -UserPrincipalName $UserPrincipalName).id
+
+Grant owner rights at root level
+-----------------------------------
+New-AzRoleAssignment -ObjectID $ID  -RoleDefinitionName Owner -Scope /
+
+
+Create a new service principal + get json definition (to be plugged into github secret)
+-------------------------------------------------------------------------------------------------
+
+at subscription scope:
+$servicePrincipal = New-AzADServicePrincipal -Role Contributor -Scope "/subscriptions/<subscription guid here>" -DisplayName <aad_deploymentaccountname>
+
+root scope:
+$servicePrincipal = New-AzADServicePrincipal -Role Owner -Scope "/" -DisplayName <aad_deploymentaccountname>
+$servicePrincipal = Get-AzADServicePrincipal -DisplayName <aad_deploymentaccountname>
+
+[ordered]@{
+    clientId = $servicePrincipal.ApplicationId
+    displayName = $servicePrincipal.DisplayName
+    name = $servicePrincipal.ServicePrincipalNames[1]
+    clientSecret = [System.Net.NetworkCredential]::new("",$servicePrincipal.Secret).Password
+    tenantId = (Get-AzContext).Tenant.Id
+    subscriptionId = (Get-AzContext).Subscription.Id
+} | ConvertTo-Json
+
+
+Create GITHUB secret using json definition above, for example:
+-----------------------------------------------------------------------
+AZURE_CREDENTIALS
+
+{
+  "clientId": "<app_id_guid>",     <---appid
+  "displayName": "<aad_deploymentaccountname>",
+  "name": "http://<aad_deploymentaccountname>",
+  "clientSecret": "<client secret guid>", 
+  "tenantId": "<tenant id guid>",     
+  "subscriptionId": "<subscription guid here>"
+}
+
+(optional) cleanup - remove AAD app
+---------------------------------
+Remove-AzADApplication -DisplayName <aad_deploymentaccountname> 
+
+Create SQL login/user
+---------------------------
+CREATE USER [<aad_deploymentaccountname>] FOR EXTERNAL PROVIDER;
+CREATE USER [<aad_deploymentaccountname>] FOR EXTERNAL PROVIDER;
+ALTER ROLE db_owner ADD MEMBER [<aad_deploymentaccountname>]; 
+
+(optional) cleanup
+--------------------
+drop user [<aad_deploymentaccountname>]
+
+(optional) cleanup permissions from various scopes
+-------------------------------------------------------
+remove-AzRoleAssignment -ObjectID $ID  -RoleDefinitionName Owner -Scope /
+remove-AzADServicePrincipal -DisplayName <aad_deploymentaccountname>
+remove-AzRoleAssignment -ObjectID $ID  -RoleDefinitionName Owner -Scope /providers/Microsoft.Management/managementGroups/rootmgmtgrp
