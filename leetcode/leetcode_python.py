@@ -12,10 +12,18 @@ def main():
 	#res=sol.minWindowSubstring(s = "a", t = "a")
 	#res=sol.minWindowSubstring(s = "a", t = "aa")
 	#res=sol.minWindowSubstring(s = "bdab", t = "ab") # hangs
-	res=sol.minWindowSubstring(s = "AADOBECODEBANC", t = "ABC")
+	#res=sol.minWindowSubstring(s = "AADOBECODEBANC", t = "ABC")
+	res=sol.intToRoman(41)
 	print(res)
 	#expected output should be "ab", but returning "bda"
 class Solution:
+	def intToRoman(self, num: int) -> str:
+		i_to_r_map = {1000:'M', 500:'D', 100:'C', 50:'L', 10:'X', 5:'V', 1:'I' }
+		roman_str=""
+		for key,value in i_to_r_map.items():
+			num=num%key
+			print(key, value, num)
+
 	def minWindowSubstring(self, s: str, t: str) -> str:
 		len_s, len_t=len(s), len(t)
 		# s_found=list(map(lambda x: x if x in t else "" ,s))
