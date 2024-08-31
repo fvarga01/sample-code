@@ -1,6 +1,7 @@
 from typing import List, Optional
-from collections import defaultdict
+from collections import defaultdict, deque
 import time
+# from timeit import timeit
 
 class ListNode:
 	def __init__(self, val:0, next=None) -> None:
@@ -8,22 +9,112 @@ class ListNode:
 		self.next=next
 def main():
 	sol=Solution()
-	#res=sol.minWindowSubstring(s = "abcdec", t = "acc")
-	#res=sol.minWindowSubstring(s = "a", t = "a")
-	#res=sol.minWindowSubstring(s = "a", t = "aa")
-	#res=sol.minWindowSubstring(s = "bdab", t = "ab") # hangs
-	#res=sol.minWindowSubstring(s = "AADOBECODEBANC", t = "ABC")
-	res=sol.intToRoman(41)
+	# res=sol.intToRoman(4)
+	# res=sol.intToRoman(9)
+	# res=sol.intToRoman(47)
+	# res=sol.intToRoman(58)
+	# res=sol.intToRoman(3749)
+	# res=sol.intToRoman(1994)
+	# res=sol.intToRoman(84) 
+
+	# res=sol.twoSum([2,7,11,15],9)
+	res=sol.isValid("([(()]){}")
 	print(res)
 	#expected output should be "ab", but returning "bda"
 class Solution:
-	def intToRoman(self, num: int) -> str:
+	def isValid(self, s:str)-> bool:
+		parenthesis_pairs = { "{":"}", "(":")", "[":"]"}
+		open_pairs=deque()
+		for c in s:
+			if( parenthesis_pairs.get(c,-1) != -1):#c is open tag
+				open_pairs.append(c)
+			else: # c is closing tag
+				if len(open_pairs)==0: return False
+				last = open_pairs.pop()
+				if(c != parenthesis_pairs.get(last,-1) ):
+					return False
+		return len(open_pairs)==0
+	def isValidParenthesisWithDequeue(self, s:str)-> bool:
+		parenthesis_pairs = { "{":"}", "(":")", "[":"]"}
+		s_queue = deque(s)
+		while s_queue:
+			l=s_queue.popleft()
+			r=s_queue.pop()
+			if(r!=parenthesis_pairs.get(l,-1)):
+				return False
+			print(l, r)
+		return True
+	def twoSum(self, nums: List[int], target: int) -> List[int]:
+		map_nums={}
+		# for n in nums: map_nums[ n ]= target - n
+		ret=[-1,-1]
+		
+		for i in range(len(nums)):
+			# print("\na",i, nums[i], map_nums.get(nums[i]))
+			if map_nums.get(nums[i],-1) > -1:
+				ret[0]=map_nums[nums[i]]
+				ret[1]=i
+			map_nums[ target - nums[i] ]=i
+			# print(map_nums)
+		return ret
+	def twoSum_bruteforce(self, nums: List[int], target: int) -> List[int]:
+		ctr=0
+		nums_len=len(nums)
+		out_arr=[]
+		for i in range(nums_len):
+			for j in range(i+1,nums_len):
+				ctr=nums[i]+nums[j]
+				print(nums_len, " ", i, " " , j," ", ctr)
+				if(ctr==target):
+					out_arr.append(i)
+					out_arr.append(j)
+		return out_arr
+	def twoSumWithHashMap2(self, nums: List[int], target: int) -> List[int]:
+		numMap = {}
+		n = len(nums)
+		for i in range(n):
+			complement = target - nums[i]
+			print(i, " ", complement, " ", numMap)
+			if complement in numMap:
+				return [numMap[complement], i]
+			numMap[nums[i]] = i
+		return []  # No solution found
+	def intToRomanA(self, num: int) -> str:
 		i_to_r_map = {1000:'M', 500:'D', 100:'C', 50:'L', 10:'X', 5:'V', 1:'I' }
 		roman_str=""
-		for key,value in i_to_r_map.items():
-			num=num%key
-			print(key, value, num)
-
+		i_to_r_map_array = list(i_to_r_map.items())
+		res=0
+		idx_skipped=-1
+		print("num=%d" %(num) )
+		for i  in range(len(i_to_r_map_array)):
+			k,v = i_to_r_map_array[i]
+			rem=num%k
+			res=int(num/k)
+			if(res>0):
+				sub=""
+				if(num==4 or num==9 or idx_skipped>-1): 
+					if(idx_skipped>-1):
+						sub =  i_to_r_map_array[i][1] + i_to_r_map_array[idx_skipped-1][1]
+						idx_skipped=-1
+						num -= res*k
+					else:
+						sub += "I" + i_to_r_map_array[i-1][1] #safe to subtract 1 because keys 5,10 are not at index0 in i_to_r_map_array				
+						num -= num
+				elif k in [1000,100,10,1]:
+					if(res>3):
+						sub=v+ i_to_r_map_array[i-1][1]
+					else:
+						sub += (v*res)
+					num-= (res*k)
+				elif k in [500,50,5]:
+					if(res==1 and rem/i_to_r_map_array[i+1][0]<4):
+						sub += v
+						num=rem
+					else:
+						idx_skipped=i
+				roman_str +=sub
+		print("      roman= %s" %(roman_str) )
+		return roman_str
 	def minWindowSubstring(self, s: str, t: str) -> str:
 		len_s, len_t=len(s), len(t)
 		# s_found=list(map(lambda x: x if x in t else "" ,s))
@@ -142,28 +233,6 @@ class Solution:
 			reversed_num=reversed_num*10+lowest_digit
 			print("x=", x, " lowest_digit=", lowest_digit, " tmp=", tmp, " reversed_num=", reversed_num)
 		return reversed_num==x
-	def twoSum(self, nums: List[int], target: int) -> List[int]:
-		ctr=0
-		nums_len=len(nums)
-		out_arr=[]
-		for i in range(nums_len):
-			for j in range(i+1,nums_len):
-				ctr=nums[i]+nums[j]
-				print(nums_len, " ", i, " " , j," ", ctr)
-				if(ctr==target):
-					out_arr.append(i)
-					out_arr.append(j)
-		return out_arr
-	def twoSumWithHashMap2(self, nums: List[int], target: int) -> List[int]:
-		numMap = {}
-		n = len(nums)
-		for i in range(n):
-			complement = target - nums[i]
-			print(i, " ", complement, " ", numMap)
-			if complement in numMap:
-				return [numMap[complement], i]
-			numMap[nums[i]] = i
-		return []  # No solution found
 def list_to_linkedlist(lst):
 	dummyHead = ListNode(0)
 	current = dummyHead
@@ -192,5 +261,12 @@ def main_old():
 	# res = sol.maxSubArray([-2,1,-3,4,-1,2,1,-5,4])
 	#res=sol.removeElement([3,2,2,4,5,3],3)
 	# res=sol.containsDuplicate([0,1,2,6,3,2])
+
+	#res=sol.minWindowSubstring(s = "abcdec", t = "acc")
+	#res=sol.minWindowSubstring(s = "a", t = "a")
+	#res=sol.minWindowSubstring(s = "a", t = "aa")
+	#res=sol.minWindowSubstring(s = "bdab", t = "ab") # hangs
+	#res=sol.minWindowSubstring(s = "AADOBECODEBANC", t = "ABC")
+	
 if __name__ == '__main__':
 	main()
