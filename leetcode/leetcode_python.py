@@ -24,46 +24,60 @@ def main():
 	# res=sol.addTwoNumbers(lst1_head, lst2_head)
 	# sol.print_linked_list(res)
 
-	board=board =[["1","3",".",".","7",".",".",".","."]
-				,["6",".",".","1","9","5",".",".","."]
-				,[".","9","8",".",".",".",".","6","."]
-				,["8",".",".",".","6",".",".",".","3"]
-				,["4",".",".","8",".","3",".",".","1"]
-				,["7",".",".",".","2",".",".",".","6"]
-				,[".","6",".",".",".",".","2","8","."]
-				,[".",".",".","4","1","9",".",".","5"]
-				,[".",".",".",".","8",".",".","7","9"]]
-	res=sol.isValidSudoku(board)
-	print(res)
 	# res=sol.addTwoNumbers(lst1_head, lst2_head)
 	# print(res)
-	#expected output should be "ab", but returning "bda"
+	board=board = [[".",".","4",".",".",".","6","3","."],[".",".",".",".",".",".",".",".","."],["5",".",".",".",".",".",".","9","."],[".",".",".","5","6",".",".",".","."],["4",".","3",".",".",".",".",".","1"],[".",".",".","7",".",".",".",".","."],[".",".",".","5",".",".",".",".","."],[".",".",".",".",".",".",".",".","."],[".",".",".",".",".",".",".",".","."]]
+	#F
+	# [["7",".",".",".","4",".",".",".","."],[".",".",".","8","6","5",".",".","."],[".","1",".","2",".",".",".",".","."],[".",".",".",".",".","9",".",".","."],[".",".",".",".","5",".","5",".","."],[".",".",".",".",".",".",".",".","."],[".",".",".",".",".",".","2",".","."],[".",".",".",".",".",".",".",".","."],[".",".",".",".",".",".",".",".","."]]
+	# T 
+	# ["5","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+	# F
+	# [["8","3",".",".","7",".",".",".","."],["6",".",".","1","9","5",".",".","."],[".","9","8",".",".",".",".","6","."],["8",".",".",".","6",".",".",".","3"],["4",".",".","8",".","3",".",".","1"],["7",".",".",".","2",".",".",".","6"],[".","6",".",".",".",".","2","8","."],[".",".",".","4","1","9",".",".","5"],[".",".",".",".","8",".",".","7","9"]]
+	# F 
+	# [[".",".","4",".",".",".","6","3","."],[".",".",".",".",".",".",".",".","."],["5",".",".",".",".",".",".","9","."],[".",".",".","5","6",".",".",".","."],["4",".","3",".",".",".",".",".","1"],[".",".",".","7",".",".",".",".","."],[".",".",".","5",".",".",".",".","."],[".",".",".",".",".",".",".",".","."],[".",".",".",".",".",".",".",".","."]]
+	sol.print_matrix(board)
+	res=sol.isValidSudoku(board)
+	print(res)
 class Solution:
 	def isValidSudoku(self, board:List[List[str]]) -> bool:
-		row_hash={}
-		col_hash={}
 		tinygrid_hash={}
-		running_max=2
-		for i in range(0,9):
-			for j in range(0,9):
-				row_val=board[i][j]
-				col_val=board[j][i]
-				row_val_freq=row_hash[row_val] = row_hash.get(row_val,0) + 1
-				col_val_freq=col_hash[col_val] = col_hash.get(col_val,0) + 1
-				if(i<=running_max and j<=running_max):
-					print("---",i,  j)
-					if(i==j):
-						tinygrid_hash[col_val] = tinygrid_hash.get(col_val,0) + 1
-					else:
-						tinygrid_hash[row_val] = tinygrid_hash.get(row_val,0) + 1
-				if(i%3==2 and j%3==2):
-					print(tinygrid_hash)
+		for row in range(0,9):
+			row_hash={}
+			col_hash={}
+			for col in range(0,9):
+				row_val=board[row][col]
+				col_val=board[col][row]
+				row_hash[row_val] = row_hash.get(row_val,0) + 1
+				col_hash[col_val] = col_hash.get(col_val,0) + 1
+				if(col%3==2 and row%3==0):
 					tinygrid_hash={}
-					running_max+=3
-				# if(row_val != '.' and row_val_freq >1): return False
-				# if(col_val != '.' and col_val_freq >1): return False
+					for i in range(row,row+3):
+						for j in range(col-2, col+1):
+							tinygrid_val=board[i][j]
+							tinygrid_hash[tinygrid_val] = tinygrid_hash.get(tinygrid_val,0) + 1
+							if tinygrid_val != '.' and tinygrid_hash[tinygrid_val] >1 :
+								print("Dup in tinygrid at:", i,j, " dup val is ", tinygrid_val)
+								return False
+				if(col_val != '.' and col_hash[col_val]  >1):
+					print("Dup in col at:", row,col, " dup val is ", col_val)
+					return False
+				if(row_val != '.' and row_hash[row_val]  >1):
+					print("Dup in row at:", row,col, " dup val is ", row_val)
+					return False
+			print(row_hash)
 		return True
-
+	def print_matrix(self, board: List[List[str]]) -> None:
+		gridstr = ""
+		for row in range (len(board)):
+			gridstr += "\n"
+			for col in range(len(board[row])):
+				gridstr += board[row][col] + " | "
+				if(col%3==2):
+					gridstr += "\t"
+			if(row%3==2):
+				gridstr += "\n"
+				
+		print( gridstr)
 	def addTwoNumbers(self, lst1: ListNode, lst2: ListNode) -> ListNode:
 		sum_head_node=curr_node=ListNode(0) # Create a dummy head for the sum result list
 		sum_val=0
@@ -75,7 +89,7 @@ class Solution:
 			sum_val = sum_val % 10 #0 if sum_val > 9 else sum_val  # Get the last digit of the sum
 			curr_node.next=ListNode(sum_val) # Create a new node with the sum value
 			curr_node=curr_node.next # Move to the new node
-			# print("dbg", (lst1.val if lst1 else -1), (lst2.val if lst2 else -1), 
+			# print("dbg", (lst1.val if lst1 else -1), (lst2.val if lst2 else -1),
 		 	# 	"currnode=", curr_node.val, ", modified sum_val=",
 			# 	sum_val, ", carry=", carry, "\n")
 			lst1=lst1.next if lst1 else None # Move to the next node in lst1
@@ -125,11 +139,11 @@ class Solution:
 			if bit_array[bit_index] & (1 << bit_position):
 				return True
 			bit_array[bit_index] |= (1 << bit_position)
-		
+
 		return False
 	def maxSubArray(self, nums:List) -> int:
 		# Initialize runningSum and maxSum with the first element of the array
-		# runningSum helps us decide whether to continue adding elements to the current subarray 
+		# runningSum helps us decide whether to continue adding elements to the current subarray
 		# or start a new subarray from the current element. maxSum stores the maximum subarray sum found so far
 		runningSum=maxSum=nums[0]
 		# Iterate through the array starting from the second element
@@ -137,7 +151,7 @@ class Solution:
 			 # Update runningSum to be the maximum of (runningSum + current element) or (current element)
 			# discard the running sum if it is lower than the current element by itself (may have negative numbers)
 			# If the running sum (the sum of the current subarray) becomes negative or less than the current element,
-			# it means that including the previous elements is not beneficial. In such cases, starting a new 
+			# it means that including the previous elements is not beneficial. In such cases, starting a new
 			# subarray from the current element is more advantageous.
 			runningSum = max(runningSum+nums[i], nums[i])#max because will discard running sum if its lower than just current element by itself
 			# Update maxSum to be the maximum of (runningSum) or (maxSum)
@@ -173,7 +187,7 @@ class Solution:
 		# Loop through each value and symbol pair
 		for val,symbol in i_to_r_map_array:
 			# While the number is greater than or equal to the current highest value we're iterating on
-			while(num>=val): 
+			while(num>=val):
 				print(num,val,symbol, roman_str)
 				num -= val
 				roman_str += symbol
@@ -188,7 +202,7 @@ class Solution:
 		res=0
 		# deferred_subtraction_index tracks keeps track of the index in the i_to_r_map_array
 		#  where a subtraction operation is pending, used for special cases 900, 40, 90.
-		# If a subtraction is pending (i.e., deferred_subtraction_index is not -1), 
+		# If a subtraction is pending (i.e., deferred_subtraction_index is not -1),
 		#  the code constructs the Roman numeral by combining the current numeral with the numeral
 		#  at the deferred_subtraction_index.
 		deferred_subtraction_index=-1
@@ -201,13 +215,13 @@ class Solution:
 			if(res>0): # If 'res' is greater than zero, we need to add Roman numerals to our string
 				sub=""
 				#handle special case 4,9 or 40,90,900 (deferred_subtraction_index)
-				if(num==4 or num==9 or deferred_subtraction_index>-1): 
+				if(num==4 or num==9 or deferred_subtraction_index>-1):
 					if(deferred_subtraction_index>-1):
 						sub =  i_to_r_map_array[i][1] + i_to_r_map_array[deferred_subtraction_index-1][1]
 						deferred_subtraction_index=-1
 						num -= res*val
 					else:
-						sub += "I" + i_to_r_map_array[i-1][1] #safe to subtract 1 because keys 5,10 are not at index0 in i_to_r_map_array				
+						sub += "I" + i_to_r_map_array[i-1][1] #safe to subtract 1 because keys 5,10 are not at index0 in i_to_r_map_array
 						num -= num
 				# Handle max three rule for 1000,100,10,1 symbols
 				elif val in [1000,100,10,1]:
@@ -220,7 +234,7 @@ class Solution:
 				elif val in [500,50,5]:
 					# andles the case where the current numeral symbol should be added exactly once
 					#  to the result string, and the remaining value (rem) is small enough to be handled
-					#  by the next smaller numeral without violating the Roman numeral rules (e.g., not having 
+					#  by the next smaller numeral without violating the Roman numeral rules (e.g., not having
 					#  four consecutive identical symbols).
 					if(res==1 and rem/i_to_r_map_array[i+1][0]<4):
 						sub += symbol # Add current symbol if it fits exactly once and the remainder is manageable
@@ -262,7 +276,7 @@ class Solution:
 			if( parenthesis_pairs.get(c,-1) != -1):
 				open_pairs.append(c) # Add it to the deque
 			else: # If the character is a closing parenthesis
-				if len(open_pairs)==0:# if no opening parenthesis are present 
+				if len(open_pairs)==0:# if no opening parenthesis are present
 					return False
 				last = open_pairs.pop() # Pop the last opening parenthesis
 				# Check if the closing parenthesis corresponds to the last opening parenthesis popped from queue
@@ -322,13 +336,13 @@ class Solution:
 
 		# Initialize a hashtable to keep track of the frequency of characters in the current window
 		s_window_map={}
-		
+
 		# Expansion loop: move the end pointer to the right for each character
 		while i_end < len_s:
 			# Current character being checked
 			c_end = s[i_end]
 			# If the current character is not in t, just move the pointer to the next character
-			if c_end not in t_map: 
+			if c_end not in t_map:
 				i_end +=1
 				continue
 			# Add to the count of the current found character
@@ -337,8 +351,8 @@ class Solution:
 			if(s_window_map[c_end] <= t_map[c_end]): total_matched_substring_ctr +=1
 			# If all characters in t are found
 			if (total_matched_substring_ctr == len_t):
-				# Check if we can optimize and move the start to make the string shorter	
-				c_start=s[i_start] 			
+				# Check if we can optimize and move the start to make the string shorter
+				c_start=s[i_start]
 				# Minimize the window size by removing unnecessary characters from the left side of the window
 				# but still maintain all required characters with their correct frequencies
 				while c_start not in t_map or s_window_map[c_start] > t_map[ c_start]:
@@ -371,13 +385,13 @@ class Solution:
 
 def main_old():
 	print('old main')
-	# Linked List solution: 
+	# Linked List solution:
 	# sol=Solution()
 	# lst1 = list_to_linkedlist([2, 4, 3])
 	# lst2 = list_to_linkedlist([5, 6, 4])
 	# res=sol.addTwoNumbers(lst1,lst2)
 	# print_linked_list(res)
 	# end Linked List solution
-	
+
 if __name__ == '__main__':
 	main()
