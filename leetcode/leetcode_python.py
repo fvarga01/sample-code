@@ -38,33 +38,174 @@ def main():
 	sol.print_matrix(board)
 	res=sol.isValidSudoku(board)
 	print(res)
+# Definition for a binary tree node.
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
 class Solution:
+    def maxDepth(self, root: Optional[TreeNode]) -> int:
+        curr=prev=root
+        curr_depth=0
+        while(curr is not None):
+            l=curr.left
+            r=curr.right
+            if(l is not None):
+                l_depth +=1
+            print("right -----")
+            r=prev.right
+            curr_depth=prev_depth
+            while(curr is not None):
+                curr_depth +=1
+                print(r.val, curr_depth)
+                r=r.right
+            curr_depth=max(curr_depth, prev_depth)
+            curr_depth +=1
+            prev_depth=curr_depth
+        return -1
 	def isValidSudoku(self, board:List[List[str]]) -> bool:
+		#using bitmask
+		# print( [["a"]*2 for _ in range(3)] )
+		# print([["b"]*2]*3)
+
+		# Initialize bitmasks for rows, columns, and 3x3 sub-boxes
+        # Each element in rows, cols, and boxes is an integer where each bit represents a number from 1 to 9
+		rows= [0]*9
+		cols= [0]*9
+		boxes= [0]*9
+		# Iterate through each cell in the 9x9 board
+		for r in range(9):
+			for c in range(9):
+				val=board[r][c]
+				# Skip empty cells
+				if(val=="."):
+					continue
+				# Calculate the bit position for the current number
+                # For example, if val is '5', pos_idx will be 4 (since 5 - 1 = 4)
+				pos_idx=int(val)-1
+				# Check for duplicates in the current row
+                # (1 << pos_idx) creates a bitmask with a 1 at the position corresponding to the number
+                # If the bitwise AND with rows[r] is not zero, it means the number is already present in the row
+				if((1<<pos_idx)  & rows[r]):
+					print("dup r", r, val)
+					return False
+				 # Mark the number in the current row by setting the corresponding bit
+				rows[r] |= (1<<pos_idx)
+				# Check for duplicates in the current column
+                # Similar to the row check, but for columns
+				if((1<<pos_idx)  & cols[c]):
+					print("dup c", c, val, bin(cols[c])[2:])
+					return False
+				# Mark the number in the current column
+				cols[c] = (1<<pos_idx)  | cols[c]
+				# Calculate the index for the 3x3 sub-box
+                # The formula (r // 3) * 3 + (c // 3) maps the cell to one of the 9 sub-boxes
+				box_index=3*(r//3) + c//3
+				if((1<<pos_idx) & boxes[ box_index]):
+					print("dup b", box_index, val)
+					return False
+				# Mark the number in the current 3x3 sub-box
+				boxes[box_index] |= 1<<pos_idx
+		print(rows)
+		return True
+	def isValidSudoku3(self, board:List[List[str]]) -> bool:
+		#using arrays
+		rows=[[0]*9 for _ in range(9)]
+		cols=[[0]*9 for _ in range(9)]
+		boxes=[[0]*9 for _ in range(9)]
+		print( [["a"]*2 for _ in range(3)] )
+		for r in range(9):
+			for c in range(9):
+				val=board[r][c]
+				if val == ".":
+					continue
+				pos_idx=int(val)-1
+				if(rows[r][pos_idx]==1):
+					print("dup in row: ", r, " value= ", val)
+					return False
+				else:
+					rows[r][pos_idx]=1
+				if(cols[c][pos_idx]==1):
+					print(cols)
+					print("dup in col: ", c, " value= ", val)
+					return False
+				else:
+					cols[c][pos_idx]=1
+				if(boxes[ 3*(r//3) + c//3 ][pos_idx]):
+					print("dup in boxes: ", 3*(r//3) + c//3, " value= ", val)
+					return False
+				else:
+					boxes[3*(r//3) + c//3][pos_idx]=1
+		return True
+	def isValidSudoku2(self, board:List[List[str]]) -> bool:
+		#using hash set
+		rows = [set() for _ in range(9)]
+		cols = [set() for _ in range(9)]
+		boxes = [set() for _ in range(9)]
+		for r in range(9):
+			for c in range(9):
+				val=board[r][c]
+				if val==".":
+					continue
+				if val in rows[r]:
+					print("dup in row: ", r, " value= ", val)
+					return False
+				else:
+					rows[r].add(val)
+				if val in cols[c]:
+					print("dup in col: ", c, " value= ", val)
+					return False
+				else:
+					cols[c].add(val)
+				box_index=(3* (r//3))+c//3
+				if val in boxes[box_index]:
+					print("dup in box: ", box_index, " value= ", val)
+					return False
+				else:
+					boxes[box_index].add(val)
+		print(rows)
+		print("\n\n\n", cols)
+		print("\n\n\n", boxes)
+		return True		
+	def isValidSudoku1(self, board:List[List[str]]) -> bool:
+		# Dictionary to keep track of values in the 3x3 sub-grids
 		tinygrid_hash={}
+		# Iterate through each row
 		for row in range(0,9):
+			# Dictionaries to keep track of values in the current row and column
 			row_hash={}
 			col_hash={}
+
+			# Iterate through each column
 			for col in range(0,9):
-				row_val=board[row][col]
-				col_val=board[col][row]
+				print("dbg",(row // 3) * 3 + col // 3, (row %3) * 3 + col % 3)
+				row_val=board[row][col] # Value in the current cell of the row
+				col_val=board[col][row] # Value in the current cell of the column
 				row_hash[row_val] = row_hash.get(row_val,0) + 1
 				col_hash[col_val] = col_hash.get(col_val,0) + 1
+
+				# Check the 3x3 sub-grid every 3 columns and rows
 				if(col%3==2 and row%3==0):
 					tinygrid_hash={}
 					for i in range(row,row+3):
 						for j in range(col-2, col+1):
 							tinygrid_val=board[i][j]
 							tinygrid_hash[tinygrid_val] = tinygrid_hash.get(tinygrid_val,0) + 1
+							# Check for duplicates in the 3x3 sub-grid
 							if tinygrid_val != '.' and tinygrid_hash[tinygrid_val] >1 :
 								print("Dup in tinygrid at:", i,j, " dup val is ", tinygrid_val)
 								return False
+				# Check for duplicates in the current entire column
 				if(col_val != '.' and col_hash[col_val]  >1):
 					print("Dup in col at:", row,col, " dup val is ", col_val)
 					return False
+				# Check for duplicates in the current entire row
 				if(row_val != '.' and row_hash[row_val]  >1):
 					print("Dup in row at:", row,col, " dup val is ", row_val)
 					return False
 			print(row_hash)
+		# If no duplicates were found, the Sudoku board is valid
 		return True
 	def print_matrix(self, board: List[List[str]]) -> None:
 		gridstr = ""
