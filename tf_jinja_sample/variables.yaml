@@ -1,0 +1,15 @@
+variables:
+  - name: region
+    description: "The AWS region"
+    type: string
+    default: "\"us-west-2\""
+    
+  - name: instance_count
+    description: "Number of instances"
+    type: number
+    default: 3
+
+  - name: instance_type
+    description: "Type of instance"
+    default : "\"t2.micro\""
+    type: string
